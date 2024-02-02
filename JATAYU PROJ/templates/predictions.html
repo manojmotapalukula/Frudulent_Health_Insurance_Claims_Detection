@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prediction</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css"
+    />
+
+    <!-- Select2 CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css"
+    />
+    <script>
+      function verify(id) {
+        var aphysician = document.getElementById(id).value;
+        if (
+          aphysician.slice(0, 3) != "PHY" ||
+          parseInt(aphysician.slice(3, aphysician.length)) < 0 ||
+          parseInt(aphysician.slice(3, aphysician.length)) > 82063
+        ) {
+          alert(`Please enter a valid ID for ${id}`)
+          return false
+        }
+        else{
+          return true
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+      <a class="navbar-brand" href="#">Fraud Detection</a>
+    </nav>
+    <div class="container mt-5">
+      <form action="/predict_fraud" method="POST" id='prediction_form' >
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="state" class="form-label">State</label>
+            <select class="form-select" id="state" name="state" required>
+              <option value="">Select State</option>
+              {% for state in states %}
+              <option value="{{ state.split('-')[0].strip() }}">
+                {{ ''.join(state.split('-')[1:]) }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="age" class="form-label">Age</label>
+            <input
+              type="number"
+              class="form-control"
+              id="age"
+              name="age"
+              required
+              min="1"
+              max="100"
+            />
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="dob_year" class="form-label">Year of Birth</label>
+            <input
+              type="number"
+              class="form-control"
+              id="dob_year"
+              name="dob_year"
+              min="1900"
+              max="2023"
+              required
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="dob_month" class="form-label">Month of Birth</label>
+            <select
+              class="form-select"
+              id="dob_month"
+              name="dob_month"
+              required
+            >
+              <option value="">Select Month</option>
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label for="tot_reimbursed_amt">Total Reimburesed Amount</label>
+            <input
+              type="number"
+              class="form-control"
+              name="tot_reimbursed_amt"
+              id="tot_reimbursed_amt"
+              required
+            />
+          </div>
+          <div class="col-md-4">
+            <label for="tot_deductible_amt">Total Deductable Amount</label>
+            <input
+              type="number"
+              class="form-control"
+              name="tot_deductible_amt"
+              id="tot_deductible_amt"
+              required
+            />
+          </div>
+          <div class="col-md-4">
+            <label for="inscclaimamtreimbursed"
+              >Total Insurance Amount Reimburesed
+            </label>
+            <input
+              type="number"
+              class="form-control"
+              name="inscclaimamtreimbursed"
+              id="inscclaimamtreimbursed"
+              required
+            />
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label for="aphysician"
+              >Attending Physician Code (Physician Code Example :
+              PHYXXXXXX)</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              name="aphysician"
+              id="aphysician"
+            />
+          </div>
+          <div class="col-md-4">
+            <label for="ophysician"
+              >Operating Physician Code (Physician Code Example :
+              PHYXXXXXX)</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              name="ophysician"
+              id="ophysician"
+            />
+          </div>
+          <div class="col-md-4">
+            <label for="otphysician"
+              >Other Physician Code (Physician Code Example : PHYXXXXXX)</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              name="otphysician"
+              id="otphysician"
+            />
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="Claim_Start_Month" class="form-label">Claim Start Month</label>
+            <select
+              class="form-select"
+              id="Claim_Start_Month"
+              name="Claim_Start_Month"
+              required
+            >
+              <option value="">Select Month</option>
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="DiagnosisGroupCode">Group Diagnosis Code</label>
+            <input type="number" class="form-control" name="DiagnosisGroupCode" id="DiagnosisGroupCode" min="1" max="736" >
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label for="clmAdmitDiagnosisCode" class="form-label"
+              >Claim Admit Diagnosis Code</label
+            >
+            <select
+              class="form-select"
+              id="clmAdmitDiagnosisCode"
+              name="clmAdmitDiagnosisCode"
+              required
+            >
+              <option value="">Select Code</option>
+              {% for clmAdmitDiagnosisCode in clmAdmitDiagnosisCodes %}
+              <option value="{{ clmAdmitDiagnosisCode }}">
+                {{ clmAdmitDiagnosisCode }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="ClmDiagnosisCode_1" class="form-label"
+              >Claim Diagnosis Code 1</label
+            >
+            <select
+              class="form-select"
+              id="ClmDiagnosisCode_1"
+              name="ClmDiagnosisCode_1"
+              required
+            >
+              <option value="">Select Code</option>
+              {% for i in ClmDiagnosisCode_1%}
+              <option value="{{ i }}">{{ i }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="ClmDiagnosisCode_2" class="form-label"
+              >Claim Diagnosis Code 2</label
+            >
+            <select
+              class="form-select"
+              id="ClmDiagnosisCode_2"
+              name="ClmDiagnosisCode_2"
+              required
+            >
+              <option value="">Select Code</option>
+              {% for i in ClmDiagnosisCode_2 %}
+              <option value="{{ i }}">{{ i }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label for="ClmDiagnosisCode_3" class="form-label"
+              >Claim Diagnosis Code 3</label
+            >
+            <select class="form-select" id="ClmDiagnosisCode_3" name="ClmDiagnosisCode_3" required>
+              <option value="">Select Code</option>
+              {% for i in ClmDiagnosisCode_3 %}
+              <option value="{{ i }}">{{ i }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="ClmDiagnosisCode_4" class="form-label"
+              >Claim Diagnosis Code 4</label
+            >
+            <select
+              class="form-select"
+              id="ClmDiagnosisCode_4"
+              name="ClmDiagnosisCode_4"
+              required
+            >
+              <option value="">Select Code</option>
+              {% for i in ClmDiagnosisCode_4 %}
+              <option value="{{ i }}">{{ i }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="tot_claim_amt">Total Claim Amount</label>
+            <input
+              type="number"
+              class="form-control"
+              name="tot_claim_amt"
+              id="tot_claim_amt"
+            />
+          </div>
+        </div>
+        <p>Select Chronic Diseases that Apply</p>
+        <div class="form-group row">
+          <div class="col-sm-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="Reneal Diease"
+                id="option1"
+              />
+              <label class="form-check-label" for="option1">Reneal Diease</label>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="Heart Failure"
+                id="option2"
+              />
+              <label class="form-check-label" for="option2">Heart Failure</label>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="Kidney Diesase"
+                id="option3"
+              />
+              <label class="form-check-label" for="option3">Kidney Diesase</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-sm-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="Cancer"
+                id="option4"
+              />
+              <label class="form-check-label" for="option4">Cancer</label>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="ObstrPulmonary"
+                id="option5"
+              />
+              <label class="form-check-label" for="option5">ObstrPulmonary</label>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="Alzheimer"
+                id="option6"
+              />
+              <label class="form-check-label" for="option6">Alzheimer</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-sm-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="Depression"
+                id="option7"
+              />
+              <label class="form-check-label" for="option7">Depression</label>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="Diabetes"
+                id="option8"
+              />
+              <label class="form-check-label" for="option8">Diabetes</label>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="Ischemic Heart"
+                id="option9"
+              />
+              <label class="form-check-label" for="option9">Ischemic Heart</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-sm-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="Osteoporasis"
+                id="option10"
+              />
+              <label class="form-check-label" for="option10">Osteoporasis</label>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="Rheumatoidarthritis"
+                id="option11"
+              />
+              <label class="form-check-label" for="option11">Rheumatoidarthritis</label>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="stroke"
+                id="option12"
+              />
+              <label class="form-check-label" for="option12">stroke</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-sm-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="option13"
+                id="option13"
+              />
+              <label class="form-check-label" for="option13">OTHERS</label>
+            </div>
+          </div>
+        </div>
+        <input type="hidden" id="Chr_Cond_Count" name="Chr_Cond_Count" value='' >
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $(".select2-single").select2({
+          theme: "bootstrap",
+          placeholder: "Type to search...",
+          allowClear: true,
+          minimumInputLength: 1,
+        });
+      });
+      var form = document.getElementById('prediction_form')
+      form.addEventListener("submit", function formSubmit(event) {
+        if (
+          verify("aphysician") &&
+          verify("ophysician") &&
+          verify("otphysician")
+        ) {
+          var count = 0;
+          var checkboxes = document.querySelectorAll('input[type=checkbox]:checked');
+          console.log(checkboxes)
+          for (var i = 0; i < checkboxes.length; i++) {
+            count++;
+          }
+          document.getElementById('Chr_Cond_Count').value = count
+          return true;
+        } else {
+          event.preventDefault();
+        }
+      })
+    </script>
+  </body>
+</html>
